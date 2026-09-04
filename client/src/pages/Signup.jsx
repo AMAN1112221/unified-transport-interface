@@ -21,7 +21,7 @@ function Signup() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
   if (!role) {
     alert("Please select your role");
@@ -57,40 +57,40 @@ function Signup() {
     return;
   }
 
-    try {
-      const response = await fetch(
-        "http://localhost:5000/api/auth/signup",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            name: formData.name,
-            phone: formData.phone,
-            email: formData.email,
-            password: formData.password,
-            role,
-            companyName: formData.companyName,
-            truckNumber: formData.truckNumber
-          })
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.message);
-        return;
-      }
-
-      console.log(data);
-      alert("Account created successfully");
-    } catch (error) {
-      console.error(error);
-      alert("Unable to connect to server");
+  try {
+  const response = await fetch(
+    "http://localhost:5000/api/auth/signup",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        password: formData.password,
+        role,
+        companyName: formData.companyName,
+        truckNumber: formData.truckNumber
+      })
     }
-  };
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    alert(data.message);
+    return;
+  }
+
+  console.log(data);
+  alert("Account created successfully");
+} catch (error) {
+  console.error(error);
+  alert("Unable to connect to server");
+}
+};
 
   return (
     <div className="signup-page">

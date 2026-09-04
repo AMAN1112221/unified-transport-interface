@@ -15,7 +15,7 @@ function Login() {
     });
   };
 
- const handleSubmit = (e) => {
+const handleSubmit = async (e) => {
   e.preventDefault();
 
   if (!role) {
@@ -24,19 +24,42 @@ function Login() {
   }
 
   if (!formData.email || !formData.password) {
-    alert("Please enter your email and password");
+    alert("Please fill all required fields");
     return;
   }
 
-  if (!formData.email.includes("@")) {
-    alert("Please enter a valid email");
-    return;
-  }
+  try {
+    const response = await fetch(
+      "http://localhost:5000/api/auth/login",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          role
+        })
+      }
+    );
 
-  console.log({
-    role,
-    ...formData
-  });
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.message);
+      return;
+    }
+
+    localStorage.setItem("token",data.token);
+    localStorage.setItem("user",JSON.stringify(data.user));
+    console.log("Login response:",data);
+    console.log("Token saved:",localStorage.getItem("token"));
+    alert("Login successful")
+  } catch (error) {
+    console.error(error);
+    alert("Unable to connect to server");
+  }
 };
 
   return (
