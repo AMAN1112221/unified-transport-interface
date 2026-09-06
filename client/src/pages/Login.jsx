@@ -55,7 +55,18 @@ const handleSubmit = async (e) => {
     localStorage.setItem("user",JSON.stringify(data.user));
     console.log("Login response:",data);
     console.log("Token saved:",localStorage.getItem("token"));
-    alert("Login successful")
+    alert("Login successful");
+
+
+  if (data.user.role === "sender") {
+  window.location.href = "/sender-dashboard";
+} else if (data.user.role === "receiver") {
+  window.location.href = "/receiver-dashboard";
+} else if (data.user.role === "driver") {
+  window.location.href = "/driver-dashboard";
+}
+
+
   } catch (error) {
     console.error(error);
     alert("Unable to connect to server");
