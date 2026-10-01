@@ -1,8 +1,12 @@
 import { useState } from "react";
+import { apiRequest } from "../api";
 import "./Signup.css";
 
 function Signup() {
   const [role, setRole] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -21,76 +25,48 @@ function Signup() {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  if (!role) {
-    alert("Please select your role");
-    return;
-  }
-
-  if (
-    !formData.name ||
-    !formData.phone ||
-    !formData.email ||
-    !formData.password ||
-    !formData.confirmPassword
-  ) {
-    alert("Please fill all required fields");
-    return;
-  }
-
-  if (formData.password !== formData.confirmPassword) {
-    alert("Passwords do not match");
-    return;
-  }
-
-  if (
-    (role === "sender" || role === "truck_owner") &&
-    !formData.companyName
-  ) {
-    alert("Please enter your company or business name");
-    return;
-  }
-
-  if (role === "driver" && !formData.truckNumber) {
-    alert("Please enter your truck number");
-    return;
-  }
-
-  try {
-  const response = await fetch(
-    "http://localhost:5000/api/auth/signup",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        name: formData.name,
-        phone: formData.phone,
-        email: formData.email,
-        password: formData.password,
-        role,
-        companyName: formData.companyName,
-        truckNumber: formData.truckNumber
-      })
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    if (!role) {
+      setError("Please select your role");
+      return;
     }
-  );
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+    if ((role === "sender" || role === "truck_owner") && !formData.companyName.trim()) {
+      setError("Please enter your company or business name");
+      return;
+    }
+    if (role === "driver" && !formData.truckNumber.trim()) {
+      setError("Please enter your truck number");
+      return;
+    }
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    alert(data.message);
-    return;
-  }
-
-  console.log(data);
-  alert("Account created successfully");
-} catch (error) {
-  console.error(error);
-  alert("Unable to connect to server");
-}
-};
+    setIsSubmitting(true);
+    try {
+      await apiRequest("auth/signup", {
+        method: "POST",
+        body: JSON.stringify({
+          name: formData.name,
+          phone: formData.phone,
+          email: formData.email,
+          password: formData.password,
+          role,
+          companyName: formData.companyName,
+          truckNumber: formData.truckNumber
+        })
+      });
+      setSuccess("Account created successfully. You can now sign in.");
+      setFormData({ name: "", phone: "", email: "", password: "", confirmPassword: "", companyName: "", truckNumber: "" });
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="signup-page">
@@ -108,6 +84,7 @@ function Signup() {
               <button
                 type="button"
                 className={role === "sender" ? "selected" : ""}
+                aria-pressed={role === "sender"}
                 onClick={() => setRole("sender")}
               >
                 Sender
@@ -116,6 +93,7 @@ function Signup() {
               <button
                 type="button"
                 className={role === "receiver" ? "selected" : ""}
+                aria-pressed={role === "receiver"}
                 onClick={() => setRole("receiver")}
               >
                 Receiver
@@ -124,6 +102,7 @@ function Signup() {
               <button
                 type="button"
                 className={role === "driver" ? "selected" : ""}
+                aria-pressed={role === "driver"}
                 onClick={() => setRole("driver")}
               >
                 Driver
@@ -132,6 +111,7 @@ function Signup() {
               <button
                 type="button"
                 className={role === "truck_owner" ? "selected" : ""}
+                aria-pressed={role === "truck_owner"}
                 onClick={() => setRole("truck_owner")}
               >
                 Truck Owner
@@ -152,88 +132,111 @@ function Signup() {
           </div>
 
           <div className="form-group">
-            <label>Full Name</label>
+            <label htmlFor="signup-name">Full Name</label>
             <input
+              id="signup-name"
               type="text"
               name="name"
               placeholder="Enter your full name"
               value={formData.name}
               onChange={handleChange}
+              autoComplete="name"
+              required
             />
           </div>
 
           <div className="form-group">
-            <label>Phone Number</label>
+            <label htmlFor="signup-phone">Phone Number</label>
             <input
+              id="signup-phone"
               type="tel"
               name="phone"
               placeholder="Enter your phone number"
               value={formData.phone}
               onChange={handleChange}
+              autoComplete="tel"
+              required
             />
           </div>
 
           <div className="form-group">
-            <label>Email</label>
+            <label htmlFor="signup-email">Email</label>
             <input
+              id="signup-email"
               type="email"
               name="email"
               placeholder="Enter your email"
               value={formData.email}
               onChange={handleChange}
+              autoComplete="email"
+              required
             />
           </div>
 
           <div className="form-group">
-            <label>Password</label>
+            <label htmlFor="signup-password">Password</label>
             <input
+              id="signup-password"
               type="password"
               name="password"
               placeholder="Create a password"
               value={formData.password}
               onChange={handleChange}
+              autoComplete="new-password"
+              minLength={8}
+              required
             />
           </div>
 
           <div className="form-group">
-            <label>Confirm Password</label>
+            <label htmlFor="signup-confirm-password">Confirm Password</label>
             <input
+              id="signup-confirm-password"
               type="password"
               name="confirmPassword"
               placeholder="Confirm your password"
               value={formData.confirmPassword}
               onChange={handleChange}
+              autoComplete="new-password"
+              required
             />
           </div>
 
           {(role === "sender" || role === "truck_owner") && (
             <div className="form-group">
-              <label>Company / Business Name</label>
+              <label htmlFor="signup-company">Company / Business Name</label>
               <input
+                id="signup-company"
                 type="text"
                 name="companyName"
                 placeholder="Enter company or business name"
                 value={formData.companyName}
                 onChange={handleChange}
+                required
               />
             </div>
           )}
 
           {role === "driver" && (
             <div className="form-group">
-              <label>Truck Number</label>
+              <label htmlFor="signup-truck">Truck Number</label>
               <input
+                id="signup-truck"
                 type="text"
                 name="truckNumber"
                 placeholder="Enter truck number"
                 value={formData.truckNumber}
                 onChange={handleChange}
+                required
               />
             </div>
           )}
 
-          <button type="submit" className="signup-button">
-            Create Account
+          {error && <p className="auth-feedback auth-feedback--error" role="alert">{error}</p>}
+          {success && <p className="auth-feedback auth-feedback--success" role="status">{success}</p>}
+
+          <button type="submit" className="signup-button" disabled={isSubmitting}>
+            {isSubmitting ? "Creating Account..." : "Create Account"}
           </button>
         </form>
 

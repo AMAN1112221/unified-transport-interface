@@ -24,6 +24,11 @@ const userSchema=new mongoose.Schema(
             required:true,
 
         },
+        tokenVersion:{
+            type:Number,
+            default:0,
+            select:false
+        },
         role:{
             type:String,
             required:true,
@@ -36,6 +41,21 @@ const userSchema=new mongoose.Schema(
         truckNumber:{
             type:String,
             trim:true,
+        },
+        deliveryAddress:{
+            type:String,
+            trim:true,
+            maxlength:300
+        },
+        city:{
+            type:String,
+            trim:true,
+            maxlength:100
+        },
+        postalCode:{
+            type:String,
+            trim:true,
+            maxlength:20
         }
     },
     {

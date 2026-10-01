@@ -1,8 +1,13 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { apiRequest, saveUser } from "../api";
 import "./Login.css";
 
 function Login() {
+  const navigate = useNavigate();
   const [role, setRole] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: ""
@@ -15,63 +20,35 @@ function Login() {
     });
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  if (!role) {
-    alert("Please select your role");
-    return;
-  }
-
-  if (!formData.email || !formData.password) {
-    alert("Please fill all required fields");
-    return;
-  }
-
-  try {
-    const response = await fetch(
-      "http://localhost:5000/api/auth/login",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          role
-        })
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      alert(data.message);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    if (!role) {
+      setError("Please select your role");
       return;
     }
 
-    localStorage.setItem("token",data.token);
-    localStorage.setItem("user",JSON.stringify(data.user));
-    console.log("Login response:",data);
-    console.log("Token saved:",localStorage.getItem("token"));
-    alert("Login successful");
-
-
-  if (data.user.role === "sender") {
-  window.location.href = "/sender-dashboard";
-} else if (data.user.role === "receiver") {
-  window.location.href = "/receiver-dashboard";
-} else if (data.user.role === "driver") {
-  window.location.href = "/driver-dashboard";
-}
-
-
-  } catch (error) {
-    console.error(error);
-    alert("Unable to connect to server");
-  }
-};
+    setIsSubmitting(true);
+    try {
+      const data = await apiRequest("auth/login", {
+        method: "POST",
+        body: JSON.stringify({ ...formData, role })
+      });
+      localStorage.setItem("token", data.token);
+      saveUser(data.user);
+      const paths = {
+        sender: "/sender-dashboard",
+        receiver: "/receiver-dashboard",
+        driver: "/driver-dashboard",
+        truck_owner: "/truck-owner-dashboard"
+      };
+      navigate(paths[data.user.role] || "/login", { replace: true });
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="login-page">
@@ -89,6 +66,7 @@ const handleSubmit = async (e) => {
               <button
                 type="button"
                 className={role === "sender" ? "selected" : ""}
+                aria-pressed={role === "sender"}
                 onClick={() => setRole("sender")}
               >
                 Sender
@@ -97,6 +75,7 @@ const handleSubmit = async (e) => {
               <button
                 type="button"
                 className={role === "receiver" ? "selected" : ""}
+                aria-pressed={role === "receiver"}
                 onClick={() => setRole("receiver")}
               >
                 Receiver
@@ -105,6 +84,7 @@ const handleSubmit = async (e) => {
               <button
                 type="button"
                 className={role === "driver" ? "selected" : ""}
+                aria-pressed={role === "driver"}
                 onClick={() => setRole("driver")}
               >
                 Driver
@@ -113,6 +93,7 @@ const handleSubmit = async (e) => {
               <button
                 type="button"
                 className={role === "truck_owner" ? "selected" : ""}
+                aria-pressed={role === "truck_owner"}
                 onClick={() => setRole("truck_owner")}
               >
                 Truck Owner
@@ -133,29 +114,37 @@ const handleSubmit = async (e) => {
           </div>
 
           <div className="form-group">
-            <label>Email</label>
+            <label htmlFor="login-email">Email</label>
             <input
+              id="login-email"
               type="email"
               name="email"
               placeholder="Enter your email"
               value={formData.email}
               onChange={handleChange}
+              autoComplete="email"
+              required
             />
           </div>
 
           <div className="form-group">
-            <label>Password</label>
+            <label htmlFor="login-password">Password</label>
             <input
+              id="login-password"
               type="password"
               name="password"
               placeholder="Enter your password"
               value={formData.password}
               onChange={handleChange}
+              autoComplete="current-password"
+              required
             />
           </div>
 
-          <button type="submit" className="login-button">
-            Sign In
+          {error && <p className="auth-feedback auth-feedback--error" role="alert">{error}</p>}
+
+          <button type="submit" className="login-button" disabled={isSubmitting}>
+            {isSubmitting ? "Signing In..." : "Sign In"}
           </button>
         </form>
 

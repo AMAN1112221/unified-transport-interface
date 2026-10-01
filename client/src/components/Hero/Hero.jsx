@@ -43,7 +43,7 @@ function Hero() {
 
         <div className="hero-actions">
           <a href="/signup" className="btn btn-primary">Get Started</a>
-          <button className="btn btn-outline">Track Shipment</button>
+          <a href="/login" className="btn btn-outline">Sign In to View Shipments</a>
         </div>
 
         <div className="hero-feature-panel" aria-label="FleetFlow features"id="feature">
@@ -54,42 +54,42 @@ function Hero() {
 
           <div className="feature-grid" >
             <article className="feature-item" >
-              <strong>Live Tracking</strong>
+              <strong>Shipment Status</strong>
               <p>
-                Monitor shipments in real time and keep every stakeholder informed
-                with transparent status updates.
+                Follow shipment progress through pending, accepted, pickup, transit,
+                and delivery status updates.
               </p>
             </article>
 
             <article className="feature-item">
-              <strong>Route Optimization</strong>
+              <strong>Receiver Association</strong>
               <p>
-                Reduce empty miles and improve delivery planning with better route
-                coordination across the network.
+                Link every shipment to a registered receiver account so delivery
+                details reach the right dashboard.
               </p>
             </article>
 
             <article className="feature-item">
-              <strong>Fuel Efficiency</strong>
+              <strong>Driver Assignments</strong>
               <p>
-                Cut wastage and improve trip planning so vehicles move smarter and
-                operating costs stay lower.
+                Drivers can review eligible shipments, accept available work, and
+                update their assigned trip status.
               </p>
             </article>
 
             <article className="feature-item">
-              <strong>Voice Translation</strong>
+              <strong>Fleet Management</strong>
               <p>
-                Break language barriers with voice-enabled communication so drivers
-                and partners can work smoothly across regions.
+                Truck owners can register vehicles, manage availability, and view
+                shipments assigned to their fleet.
               </p>
             </article>
 
             <article className="feature-item">
-              <strong>Digital Payments</strong>
+              <strong>Role-Based Access</strong>
               <p>
-                Make settlements faster and more secure with built-in digital
-                payment flows that reduce delays and paperwork.
+                Senders, receivers, drivers, and truck owners each get access to
+                the records and actions for their role.
               </p>
             </article>
           </div>

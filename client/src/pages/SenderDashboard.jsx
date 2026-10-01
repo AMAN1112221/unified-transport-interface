@@ -1,82 +1,52 @@
 import { useEffect, useState } from "react";
+import { apiRequest, endSession, getDirectionsUrl, getStoredUser, saveUser } from "../api";
+import "./SenderDashboard.css";
 
 function SenderDashboard() {
-  const [user] = useState(() => {
-    const savedUser = localStorage.getItem("user");
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
+  const [user, setUser] = useState(getStoredUser);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [profileError, setProfileError] = useState("");
 
   const [formData, setFormData] = useState({
     pickup: "",
     delivery: "",
     packageType: "",
     weight: "",
-    vehicle: ""
+    vehicle: "",
+    receiverEmail: ""
   });
 
   const [message, setMessage] = useState("");
-
+  const [formError, setFormError] = useState("");
   const [shipments, setShipments] = useState([]);
-
   const [loadingShipments, setLoadingShipments] = useState(true);
-
-
-  // ==========================================
-  // GET MY SHIPMENTS
-  // ==========================================
+  const [shipmentError, setShipmentError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [cancellingId, setCancellingId] = useState("");
 
   const fetchMyShipments = async () => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      return;
-    }
-
     try {
       setLoadingShipments(true);
-
-      const response = await fetch(
-        "http://localhost:5000/api/shipments/my",
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to fetch shipments"
-        );
-      }
-
-      console.log("My shipments:", data);
-
+      setShipmentError("");
+      const data = await apiRequest("shipments/my");
       setShipments(data.shipments || []);
-
     } catch (error) {
-      console.error("Error fetching shipments:", error);
+      setShipmentError(error.message);
     } finally {
       setLoadingShipments(false);
     }
   };
 
-
-  // ==========================================
-  // FETCH SHIPMENTS WHEN PAGE LOADS
-  // ==========================================
-
   useEffect(() => {
     fetchMyShipments();
+    apiRequest("auth/profile")
+      .then(({ user: profile }) => {
+        setUser(profile);
+        saveUser(profile);
+      })
+      .catch((error) => setProfileError(error.message))
+      .finally(() => setLoadingProfile(false));
   }, []);
-
-
-  // ==========================================
-  // FORM CHANGE
-  // ==========================================
 
   const handleChange = (e) => {
     setFormData({
@@ -85,113 +55,85 @@ function SenderDashboard() {
     });
   };
 
-
-  // ==========================================
-  // CREATE SHIPMENT
-  // ==========================================
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      alert("Please login again");
-      window.location.href = "/login";
+    setMessage("");
+    setFormError("");
+    if (!formData.pickup.trim() || !formData.delivery.trim() || !formData.packageType.trim() ||
+      !formData.receiverEmail.trim() || !Number.isFinite(Number(formData.weight)) ||
+      Number(formData.weight) <= 0 || !formData.vehicle) {
+      setFormError("Complete every shipment field with a valid weight and receiver email.");
       return;
     }
 
-    if (
-      !formData.pickup ||
-      !formData.delivery ||
-      !formData.packageType ||
-      !formData.weight ||
-      !formData.vehicle
-    ) {
-      alert("Please fill all fields");
-      return;
-    }
-
+    setIsSubmitting(true);
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/shipments/",
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          },
-
-          body: JSON.stringify({
-            pickup: formData.pickup,
-            delivery: formData.delivery,
-            packageType: formData.packageType,
-            weight: Number(formData.weight),
-            vehicle: formData.vehicle
-          })
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(
-          data.message || "Failed to create shipment"
-        );
-        return;
-      }
-
-      console.log("Shipment created:", data);
-
+      await apiRequest("shipments", {
+        method: "POST",
+        body: JSON.stringify({
+          ...formData,
+          pickup: formData.pickup.trim(),
+          delivery: formData.delivery.trim(),
+          packageType: formData.packageType.trim(),
+          receiverEmail: formData.receiverEmail.trim(),
+          weight: Number(formData.weight)
+        })
+      });
       setMessage("Shipment created successfully!");
-
-      // Clear form
       setFormData({
         pickup: "",
         delivery: "",
         packageType: "",
         weight: "",
-        vehicle: ""
+        vehicle: "",
+        receiverEmail: ""
       });
-
-      // Fetch updated shipment list
-      fetchMyShipments();
-
+      await fetchMyShipments();
     } catch (error) {
-      console.error("Error:", error);
-      alert("Unable to connect to server");
+      setFormError(error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-
-  // ==========================================
-  // LOGOUT
-  // ==========================================
-
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-
-    window.location.href = "/login";
+    endSession();
   };
 
+  const handleCancel = async (shipmentId) => {
+    if (!window.confirm("Cancel this shipment?")) return;
+    setCancellingId(shipmentId);
+    setShipmentError("");
+    setMessage("");
+    try {
+      await apiRequest(`shipments/${shipmentId}/cancel`, { method: "PATCH" });
+      setMessage("Shipment cancelled.");
+      await fetchMyShipments();
+    } catch (error) {
+      setShipmentError(error.message);
+    } finally {
+      setCancellingId("");
+    }
+  };
 
-  // ==========================================
-  // NO USER
-  // ==========================================
+  if (loadingProfile) {
+    return <main className="sender-dashboard"><p className="sender-empty-state">Loading your profile...</p></main>;
+  }
 
-  if (!user) {
+  if (!user || profileError) {
     return (
-      <div>
-        <h2>Please login first</h2>
+      <main className="sender-dashboard sender-dashboard--notice">
+        <section className="sender-notice">
+          <h2>{profileError || "Please login first"}</h2>
 
-        <button
-          onClick={() => (window.location.href = "/login")}
-        >
-          Go to Login
-        </button>
-      </div>
+          <button
+            className="sender-button sender-button--primary"
+            onClick={() => (window.location.href = "/login")}
+          >
+            Go to Login
+          </button>
+        </section>
+      </main>
     );
   }
 
@@ -201,231 +143,200 @@ function SenderDashboard() {
   // ==========================================
 
   return (
-    <div>
-
-      <h1>Sender Dashboard</h1>
-
-      <button onClick={handleLogout}>
-        Logout
-      </button>
-
-      <hr />
-
-
-      {/* USER INFORMATION */}
-
-      <h2>Welcome, {user.name}</h2>
-
-      <p>
-        <strong>Email:</strong> {user.email}
-      </p>
-
-      <p>
-        <strong>Phone:</strong> {user.phone}
-      </p>
-
-      <p>
-        <strong>Role:</strong> {user.role}
-      </p>
-
-      <hr />
-
-
-      {/* CREATE SHIPMENT */}
-
-      <h2>Create New Shipment</h2>
-
-      <form onSubmit={handleSubmit}>
-
+    <main className="sender-dashboard">
+      <header className="sender-dashboard__header">
         <div>
-          <label>Pickup Location</label>
-          <br />
-
-          <input
-            type="text"
-            name="pickup"
-            placeholder="Enter pickup location"
-            value={formData.pickup}
-            onChange={handleChange}
-          />
+          <p className="sender-eyebrow">Unified Transport Interface</p>
+          <h1>Sender Dashboard</h1>
         </div>
-
-        <br />
-
-
-        <div>
-          <label>Delivery Location</label>
-          <br />
-
-          <input
-            type="text"
-            name="delivery"
-            placeholder="Enter delivery location"
-            value={formData.delivery}
-            onChange={handleChange}
-          />
-        </div>
-
-        <br />
-
-
-        <div>
-          <label>Package Type</label>
-          <br />
-
-          <input
-            type="text"
-            name="packageType"
-            placeholder="e.g. Electronics"
-            value={formData.packageType}
-            onChange={handleChange}
-          />
-        </div>
-
-        <br />
-
-
-        <div>
-          <label>Weight (kg)</label>
-          <br />
-
-          <input
-            type="number"
-            name="weight"
-            placeholder="Enter weight"
-            value={formData.weight}
-            onChange={handleChange}
-          />
-        </div>
-
-        <br />
-
-
-        <div>
-          <label>Vehicle Type</label>
-          <br />
-
-          <select
-            name="vehicle"
-            value={formData.vehicle}
-            onChange={handleChange}
-          >
-            <option value="">
-              Select Vehicle
-            </option>
-
-            <option value="Truck">
-              Truck
-            </option>
-
-            <option value="Mini Truck">
-              Mini Truck
-            </option>
-
-            <option value="Tempo">
-              Tempo
-            </option>
-
-            <option value="Container">
-              Container
-            </option>
-          </select>
-        </div>
-
-        <br />
-
-
-        <button type="submit">
-          Create Shipment
+        <button className="sender-button sender-button--outline" onClick={handleLogout}>
+          Logout
         </button>
+      </header>
 
-      </form>
+      <div className="sender-dashboard__content">
+        <section className="sender-panel sender-profile">
+          <div className="sender-section-heading">
+            <p className="sender-eyebrow">Account</p>
+            <h2>Welcome, {user.name}</h2>
+          </div>
+          <div className="sender-profile__details">
+            <p><strong>Email</strong><span>{user.email || "Not on file"}</span></p>
+            <p><strong>Phone</strong><a href={user.phone ? `tel:${user.phone}` : undefined}>{user.phone || "Not on file"}</a></p>
+            <p><strong>Role</strong><span>{user.role || "sender"}</span></p>
+          </div>
+        </section>
 
+        <section className="sender-panel">
+          <div className="sender-section-heading">
+            <p className="sender-eyebrow">New request</p>
+            <h2>Create New Shipment</h2>
+          </div>
 
-      <br />
+          <form className="sender-form" onSubmit={handleSubmit}>
+            <div className="sender-form__grid">
+              <div className="sender-field">
+                <label htmlFor="sender-pickup">Pickup Location</label>
+                <input
+                  id="sender-pickup"
+                  type="text"
+                  name="pickup"
+                  placeholder="Enter pickup location"
+                  value={formData.pickup}
+                  onChange={handleChange}
+                />
+              </div>
 
+              <div className="sender-field">
+                <label htmlFor="sender-delivery">Delivery Location</label>
+                <input
+                  id="sender-delivery"
+                  type="text"
+                  name="delivery"
+                  placeholder="Enter delivery location"
+                  value={formData.delivery}
+                  onChange={handleChange}
+                />
+              </div>
 
-      {message && (
-        <p>
-          <strong>{message}</strong>
-        </p>
-      )}
+              <div className="sender-field">
+                <label htmlFor="sender-package-type">Package Type</label>
+                <input
+                  id="sender-package-type"
+                  type="text"
+                  name="packageType"
+                  placeholder="e.g. Electronics"
+                  value={formData.packageType}
+                  onChange={handleChange}
+                />
+              </div>
 
+              <div className="sender-field">
+                <label htmlFor="sender-weight">Weight (kg)</label>
+                <input
+                  id="sender-weight"
+                  type="number"
+                  name="weight"
+                  placeholder="Enter weight"
+                  value={formData.weight}
+                  onChange={handleChange}
+                />
+              </div>
 
-      <hr />
+              <div className="sender-field">
+                <label htmlFor="sender-vehicle">Vehicle Type</label>
+                <select
+                  id="sender-vehicle"
+                  name="vehicle"
+                  value={formData.vehicle}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Vehicle</option>
+                  <option value="Truck">Truck</option>
+                  <option value="Mini Truck">Mini Truck</option>
+                  <option value="Tempo">Tempo</option>
+                  <option value="Container">Container</option>
+                </select>
+              </div>
 
-
-      {/* ==========================================
-          MY SHIPMENTS
-      ========================================== */}
-
-      <h2>My Shipments</h2>
-
-
-      {loadingShipments ? (
-        <p>Loading shipments...</p>
-      ) : shipments.length === 0 ? (
-        <p>No shipments created yet.</p>
-      ) : (
-
-        <div>
-
-          {shipments.map((shipment, index) => (
-
-            <div key={shipment._id}>
-
-              <h3>
-                Shipment #{index + 1}
-              </h3>
-
-              <p>
-                <strong>Pickup:</strong>{" "}
-                {shipment.pickup}
-              </p>
-
-              <p>
-                <strong>Delivery:</strong>{" "}
-                {shipment.delivery}
-              </p>
-
-              <p>
-                <strong>Package Type:</strong>{" "}
-                {shipment.packageType}
-              </p>
-
-              <p>
-                <strong>Weight:</strong>{" "}
-                {shipment.weight} kg
-              </p>
-
-              <p>
-                <strong>Vehicle:</strong>{" "}
-                {shipment.vehicle}
-              </p>
-
-              <p>
-                <strong>Status:</strong>{" "}
-                {shipment.status}
-              </p>
-
-              <p>
-                <strong>Created:</strong>{" "}
-                {new Date(
-                  shipment.createdAt
-                ).toLocaleString()}
-              </p>
-
-              <hr />
-
+              <div className="sender-field">
+                <label htmlFor="sender-receiver-email">Receiver Account Email</label>
+                <input
+                  id="sender-receiver-email"
+                  type="email"
+                  name="receiverEmail"
+                  placeholder="Enter a registered receiver email"
+                  value={formData.receiverEmail}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
             </div>
 
-          ))}
+            <div className="sender-form__actions">
+              <button className="sender-button sender-button--primary" type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Creating..." : "Create Shipment"}
+              </button>
+              {message && <p className="sender-success" role="status">{message}</p>}
+              {formError && <p className="sender-error" role="alert">{formError}</p>}
+            </div>
+          </form>
+        </section>
 
-        </div>
+        <section className="sender-shipments">
+          <div className="sender-shipments__heading">
+            <div className="sender-section-heading">
+              <p className="sender-eyebrow">Your activity</p>
+              <h2>My Shipments</h2>
+            </div>
+            <button className="sender-button sender-button--outline" type="button" onClick={fetchMyShipments} disabled={loadingShipments}>
+              {loadingShipments ? "Refreshing..." : "Refresh Shipments"}
+            </button>
+          </div>
 
-      )}
-
-    </div>
+          {loadingShipments ? (
+            <p className="sender-empty-state">Loading shipments...</p>
+          ) : shipmentError ? (
+            <div className="sender-empty-state sender-empty-state--error" role="alert">
+              <p>{shipmentError}</p>
+              <button className="sender-button sender-button--outline" onClick={fetchMyShipments}>Retry</button>
+            </div>
+          ) : shipments.length === 0 ? (
+            <p className="sender-empty-state">No shipments created yet.</p>
+          ) : (
+            <div className="sender-shipments__grid">
+              {shipments.map((shipment, index) => (
+                <article className="sender-shipment" key={shipment._id}>
+                  <div className="sender-shipment__heading">
+                    <h3>Shipment #{index + 1}</h3>
+                    <span className="sender-shipment__status">{shipment.status}</span>
+                  </div>
+                  <p className="sender-shipment__id">ID: {shipment._id}</p>
+                  <dl className="sender-shipment__details">
+                    <div><dt>Pickup</dt><dd>{shipment.pickup}</dd></div>
+                    <div><dt>Delivery</dt><dd>{shipment.delivery}</dd></div>
+                    <div><dt>Package Type</dt><dd>{shipment.packageType}</dd></div>
+                    <div><dt>Weight</dt><dd>{shipment.weight} kg</dd></div>
+                    <div><dt>Vehicle</dt><dd>{shipment.vehicle}</dd></div>
+                    <div>
+                      <dt>Receiver</dt>
+                      <dd>
+                        {shipment.receiver?.name || "Unavailable"}
+                        {shipment.receiver?.email && <><br /><span className="sender-contact-value">{shipment.receiver.email}</span></>}
+                        {shipment.receiver?.phone && <><br /><a className="sender-contact-link" href={`tel:${shipment.receiver.phone}`}>{shipment.receiver.phone}</a></>}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Assigned Driver</dt>
+                      <dd>
+                        {shipment.assignedDriver?.name || "Not assigned yet"}
+                        {shipment.assignedDriver?.email && <><br /><span className="sender-contact-value">{shipment.assignedDriver.email}</span></>}
+                        {shipment.assignedDriver?.phone && <><br /><a className="sender-contact-link" href={`tel:${shipment.assignedDriver.phone}`}>{shipment.assignedDriver.phone}</a></>}
+                      </dd>
+                    </div>
+                    <div><dt>Truck Number</dt><dd>{shipment.truck?.registrationNumber || "Not assigned yet"}</dd></div>
+                    <div><dt>Created</dt><dd>{new Date(shipment.createdAt).toLocaleString()}</dd></div>
+                  </dl>
+                  <a className="sender-map-link" href={getDirectionsUrl(shipment.pickup, shipment.delivery)} target="_blank" rel="noreferrer">
+                    Open route map
+                  </a>
+                  {["Pending", "Accepted"].includes(shipment.status) && (
+                    <button
+                      className="sender-button sender-button--cancel"
+                      type="button"
+                      onClick={() => handleCancel(shipment._id)}
+                      disabled={Boolean(cancellingId)}
+                    >
+                      {cancellingId === shipment._id ? "Cancelling..." : "Cancel Shipment"}
+                    </button>
+                  )}
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+    </main>
   );
 }
 
