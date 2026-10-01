@@ -1,0 +1,456 @@
+.owner-dashboard {
+  --owner-ink: #201d1b;
+  --owner-muted: #66716c;
+  --owner-green: #3f6d5e;
+  --owner-line: rgba(32, 29, 27, 0.1);
+  min-height: 100vh;
+  padding: 3.5rem 7% 5rem;
+  color: var(--owner-ink);
+  background: radial-gradient(ellipse at 92% 2%, rgba(117, 165, 137, 0.12), transparent 30rem), linear-gradient(180deg, #f5f1eb 0%, #f8f7f4 52%, #f1f4f0 100%);
+}
+
+.owner-header,
+.owner-content {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+}
+
+.owner-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 2.2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--owner-line);
+}
+
+.owner-dashboard h1,
+.owner-dashboard h2,
+.owner-dashboard h3 {
+  color: #18211d;
+}
+
+.owner-dashboard h1 {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1.08;
+  font-weight: 800;
+}
+
+.owner-eyebrow {
+  margin: 0 0 0.55rem;
+  color: var(--owner-green);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.owner-content {
+  display: grid;
+  gap: 2rem;
+}
+
+.owner-panel,
+.owner-shipment,
+.owner-payment-note {
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid rgba(32, 29, 27, 0.08);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 16px 40px rgba(42, 52, 47, 0.055);
+}
+
+.owner-profile h2,
+.owner-section-title h2,
+.owner-payment-note h2 {
+  margin: 0;
+  font-size: clamp(1.3rem, 2.3vw, 1.75rem);
+  line-height: 1.2;
+}
+
+.owner-profile-details,
+.owner-details {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.2rem 0 0;
+}
+
+.owner-profile-details div,
+.owner-details div {
+  min-width: 0;
+}
+
+.owner-profile-details dt,
+.owner-details dt {
+  color: var(--owner-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.owner-profile-details dd,
+.owner-details dd {
+  margin: 0.25rem 0 0;
+  color: #303a34;
+  font-size: 0.86rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.owner-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.owner-summary div {
+  display: grid;
+  gap: 0.2rem;
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--owner-line);
+  border-radius: 0.8rem;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.owner-summary strong {
+  color: #18211d;
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+.owner-summary span {
+  color: var(--owner-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.owner-section-title {
+  margin-bottom: 1.1rem;
+}
+
+.owner-truck-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  align-items: end;
+  gap: 0.8rem;
+  margin-bottom: 1.3rem;
+}
+
+.owner-truck-form label,
+.owner-assign-controls label {
+  display: grid;
+  gap: 0.45rem;
+  color: #343d38;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.owner-truck-form input,
+.owner-truck-form select,
+.owner-assign-controls select {
+  width: 100%;
+  min-height: 46px;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(32, 29, 27, 0.14);
+  border-radius: 0.5rem;
+  background: #fff;
+  color: var(--owner-ink);
+}
+
+.owner-truck-form input:focus-visible,
+.owner-truck-form select:focus-visible,
+.owner-assign-controls select:focus-visible {
+  outline: 3px solid rgba(63, 109, 94, 0.2);
+  border-color: var(--owner-green);
+}
+
+.owner-truck-list,
+.owner-shipment-list,
+.owner-history-list {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.owner-truck {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--owner-line);
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.owner-truck h3 {
+  margin: 0;
+  font-size: 0.98rem;
+}
+
+.owner-truck p {
+  margin: 0.25rem 0 0;
+  color: var(--owner-muted);
+  font-size: 0.82rem;
+}
+
+.owner-truck-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.owner-availability,
+.owner-status {
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(117, 165, 137, 0.17);
+  color: #35644f;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.owner-availability--busy {
+  background: rgba(166, 117, 69, 0.13);
+  color: #805b35;
+}
+
+.owner-shipment {
+  min-width: 0;
+  padding: 1.25rem;
+}
+
+.owner-shipment-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--owner-line);
+}
+
+.owner-shipment-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.owner-details {
+  gap: 0.8rem;
+  margin: 0;
+  padding: 1rem 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.owner-assign-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) auto;
+  align-items: end;
+  gap: 0.7rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--owner-line);
+}
+
+.owner-button {
+  min-height: 44px;
+  padding: 0.7rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.owner-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.owner-button:focus-visible {
+  outline: 3px solid rgba(63, 109, 94, 0.3);
+  outline-offset: 2px;
+}
+
+.owner-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.owner-button--primary {
+  background: linear-gradient(135deg, #1c1c1c 0%, #2a3b3b 55%, #3f6d5e 100%);
+  color: #fff;
+  box-shadow: 0 10px 20px rgba(17, 24, 39, 0.13);
+}
+
+.owner-button--outline {
+  border-color: rgba(32, 29, 27, 0.16);
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--owner-ink);
+}
+
+.owner-history-item {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) auto minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid var(--owner-line);
+  color: #303a34;
+  font-size: 0.84rem;
+}
+
+.owner-history-item div {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.owner-history-item small {
+  color: var(--owner-muted);
+  font-size: 0.68rem;
+}
+
+.owner-payment-note {
+  padding: 1.3rem 1.5rem;
+}
+
+.owner-payment-note p {
+  margin: 0.5rem 0 0;
+  color: var(--owner-muted);
+}
+
+.owner-feedback,
+.owner-state {
+  margin: 0;
+  padding: 1rem 1.2rem;
+  border: 1px solid rgba(63, 109, 94, 0.18);
+  border-radius: 0.75rem;
+  background: rgba(117, 165, 137, 0.1);
+  color: #315d4e;
+  font-weight: 700;
+}
+
+.owner-feedback--error {
+  border-color: rgba(166, 76, 63, 0.2);
+  background: rgba(166, 76, 63, 0.07);
+  color: #913d33;
+}
+
+.owner-state {
+  border-style: dashed;
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--owner-muted);
+  text-align: center;
+}
+
+@media (max-width: 920px) {
+  .owner-dashboard {
+    padding: 2.25rem 5% 3.5rem;
+  }
+
+  .owner-truck-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .owner-history-item {
+    grid-template-columns: minmax(0, 2fr) auto minmax(0, 1fr);
+  }
+
+  .owner-history-item > :last-child {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .owner-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .owner-profile-details,
+  .owner-summary,
+  .owner-truck-form,
+  .owner-details,
+  .owner-assign-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .owner-truck {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .owner-truck-actions {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .owner-truck-actions .owner-button,
+  .owner-truck-form .owner-button,
+  .owner-assign-controls .owner-button {
+    width: 100%;
+  }
+
+  .owner-shipment-header {
+    flex-direction: column;
+  }
+
+  .owner-history-item {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .owner-history-item > :nth-child(3) {
+    display: none;
+  }
+}
+
+.owner-search {
+  display: grid;
+  width: min(420px, 100%);
+  gap: 0.45rem;
+  margin: 0 0 1rem;
+  color: #343d38;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.owner-search input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(32, 29, 27, 0.14);
+  border-radius: 0.5rem;
+  background: #fff;
+  color: var(--owner-ink);
+}
+
+.owner-search input:focus-visible {
+  outline: 3px solid rgba(63, 109, 94, 0.2);
+  border-color: var(--owner-green);
+}
+
+.owner-map-link {
+  color: #315d4e;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.owner-map-link {
+  display: inline-block;
+  margin: 0 0 1rem;
+  font-size: 0.82rem;
+}
+
+.owner-contact-value {
+  overflow-wrap: anywhere;
+}

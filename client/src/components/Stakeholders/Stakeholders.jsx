@@ -8,8 +8,8 @@ function Stakeholders() {
 
         <p>
           UTI brings every participant into one connected system, making freight
-          movement easier to manage, track, and complete while improving route
-          visibility, communication, and payments across the journey.
+          movement easier to manage through registered receiver links, driver
+          assignments, shipment status updates, and owner-managed fleet records.
         </p>
       </div>
 
@@ -18,8 +18,8 @@ function Stakeholders() {
           <div className="stakeholder-number">01</div>
           <h3>Sender</h3>
           <p>
-            Upload your goods requirements with pickup location, destination,
-            weight, load type, pickup date, price, and shipment details.
+            Create a shipment with pickup and delivery locations, package details,
+            weight, vehicle type, and a registered receiver account.
           </p>
           <span>Post & Manage Loads →</span>
         </div>
@@ -28,8 +28,8 @@ function Stakeholders() {
           <div className="stakeholder-number">02</div>
           <h3>Driver</h3>
           <p>
-            Search available loads based on route and requirements, request a
-            booking, manage trips, and maintain your complete trip history.
+            Review pending shipments, accept eligible work, and advance the status
+            of trips assigned to your account.
           </p>
           <span>Find & Book Loads →</span>
         </div>
@@ -38,8 +38,8 @@ function Stakeholders() {
           <div className="stakeholder-number">03</div>
           <h3>Truck Owner</h3>
           <p>
-            Manage your trucks and drivers, monitor bookings and ongoing trips,
-            and access fleet, payment, and transportation history.
+            Register trucks, update their availability, assign compatible vehicles,
+            and view fleet shipments and trip history.
           </p>
           <span>Manage Your Fleet →</span>
         </div>
@@ -48,8 +48,8 @@ function Stakeholders() {
           <div className="stakeholder-number">04</div>
           <h3>Receiver</h3>
           <p>
-            Enter the shipment reference number received from the sender and
-            view shipment details, current status, and tracking information.
+            View shipments linked to your registered account, including sender,
+            delivery details, assigned vehicle, and current status progress.
           </p>
           <span>Track Your Shipment →</span>
         </div>

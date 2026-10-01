@@ -9,6 +9,7 @@ import SenderDashboard from "./pages/SenderDashboard";
 import ReceiverDashboard from "./pages/ReceiverDashboard";
 import DriverDashboard from "./pages/DriverDashboard";
 import TruckOwnerDashboard from "./pages/TruckOwnerDashboard";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -23,22 +24,38 @@ function App() {
 
         <Route
           path="/sender-dashboard"
-          element={<SenderDashboard />}
+          element={
+            <ProtectedRoute allowedRole="sender">
+              <SenderDashboard />
+            </ProtectedRoute>
+          }
         />
 
         <Route
           path="/receiver-dashboard"
-          element={<ReceiverDashboard />}
+          element={
+            <ProtectedRoute allowedRole="receiver">
+              <ReceiverDashboard />
+            </ProtectedRoute>
+          }
         />
 
         <Route
           path="/driver-dashboard"
-          element={<DriverDashboard />}
+          element={
+            <ProtectedRoute allowedRole="driver">
+              <DriverDashboard />
+            </ProtectedRoute>
+          }
         />
 
         <Route
           path="/truck-owner-dashboard"
-          element={<TruckOwnerDashboard />}
+          element={
+            <ProtectedRoute allowedRole="truck_owner">
+              <TruckOwnerDashboard />
+            </ProtectedRoute>
+          }
         />
 
       </Routes>
